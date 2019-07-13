@@ -3,6 +3,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_minesweeper/board_square.dart';
 
 
+// Types of images available
+enum ImageType {
+  zero,
+  one,
+  two,
+  three,
+  four,
+  five,
+  six,
+  seven,
+  eight,
+  bomb,
+  facingDown,
+  flagged,
+}
+
+
 class GameActivity extends StatefulWidget {
   @override
   _GameActivityState createState() => _GameActivityState();
@@ -129,7 +146,7 @@ class _GameActivityState extends State<GameActivity> {
                 ),
               );
             },
-            itemCount: rowCount * columnCount;
+            itemCount: rowCount * columnCount,
           ),
         ],
       ),
@@ -173,46 +190,52 @@ class _GameActivityState extends State<GameActivity> {
     }
 
     // check bombs around and assign numbers
-    for(int i = 0; i  < rowCount; i++){
-      for(int j = 0; j < columnCount; j++){
-        if(i > 0 && j > 0){
-          if(board[i-1][j].hasBomb){
+    for (int i = 0; i < rowCount; i++) {
+      for (int j = 0; j < columnCount; j++) {
+        if (i > 0 && j > 0) {
+          if (board[i - 1][j - 1].hasBomb) {
             board[i][j].bombsAround++;
           }
         }
 
-        if(i > 0){
-          if(board[i-1][j].hasBomb){
+        if (i > 0) {
+          if (board[i - 1][j].hasBomb) {
             board[i][j].bombsAround++;
           }
         }
 
-        if(i > 0 && j < columnCount - 1){
-          if(board[i-1][j+1].hasBomb){
+        if (i > 0 && j < columnCount - 1) {
+          if (board[i - 1][j + 1].hasBomb) {
             board[i][j].bombsAround++;
           }
         }
 
-        if(j > 0){
-          if(board[i][j+1].hasBomb){
+        if (j > 0) {
+          if (board[i][j - 1].hasBomb) {
             board[i][j].bombsAround++;
           }
         }
 
-        if(j < columnCount - 1){
-          if(board[i][j+1].hasBomb){
+        if (j < columnCount - 1) {
+          if (board[i][j + 1].hasBomb) {
             board[i][j].bombsAround++;
           }
         }
 
-        if(i < rowCount - 1 && j > 0){
-          if(board[i+1][j-1].hasBomb){
+        if (i < rowCount - 1 && j > 0) {
+          if (board[i + 1][j - 1].hasBomb) {
             board[i][j].bombsAround++;
           }
         }
 
-        if(i < rowCount - 1 && j < columnCount - 1){
-          if(board[i+1][j+1].hasBomb){
+        if (i < rowCount - 1) {
+          if (board[i + 1][j].hasBomb) {
+            board[i][j].bombsAround++;
+          }
+        }
+
+        if (i < rowCount - 1 && j < columnCount - 1) {
+          if (board[i + 1][j + 1].hasBomb) {
             board[i][j].bombsAround++;
           }
         }
@@ -265,6 +288,107 @@ class _GameActivityState extends State<GameActivity> {
           _handleTap(i + 1, j);
         }
       }
+    }
+
+    set State(() {});
+  }
+
+  // function to handle when a bomb is clicked
+  void _handleGameOver() {
+    showDialog(
+      context: context,
+      builder: (context){
+        return AlertDialog(
+          title: Text("Game Over!"),
+          content: Text("You stepped on a mine!"),
+          actions: <Widget>[
+            FlatButton(
+              onPressed: () {
+                _initializeGame();
+                Navigator.pop(context);
+              },
+              child: Text("Play again"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _handleWin() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("Congratulations!"),
+          content: Text("You Win!"),
+          actions: <Widget>[
+            FlatButton(
+              onPressed: () {
+                _initializeGame();
+                Navigator.pop(context);
+              },
+              child: Text("Play again"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Image getImage(ImageType type) {
+    switch (type) {
+      case ImageType.zero:
+       return Image.asset('images/0.png');
+      case ImageType.one:
+        return Image.asset('images/1.png');
+      case ImageType.two:
+        return Image.asset('images/2.png');
+      case ImageType.three:
+        return Image.asset('images/3.png');
+      case ImageType.four:
+        return Image.asset('images/4.png');
+      case ImageType.five:
+        return Image.asset('images/5.png');
+      case ImageType.six:
+        return Image.asset('images/6.png');
+      case ImageType.seven:
+        return Image.asset('images/7.png');
+      case ImageType.eight:
+        return Image.asset('images/8.png');
+      case ImageType.bomb:
+        return Image.asset('images/bomb.png');
+      case ImageType.facingDown:
+        return Image.asset('images/facingDown.png');
+      case ImageType.flagged:
+        return Image.asset('images/flagged.png');
+      default:
+        return null;
+    }
+  }
+
+  ImageType getImageTypeFromNumber(int number) {
+    switch (number) {
+      case 0:
+        return ImageType.zero;
+      case 1:
+        return ImageType.one;
+      case 2:
+        return ImageType.two;
+      case 3:
+        return ImageType.three;
+      case 4:
+        return ImageType.four;
+      case 5:
+        return ImageType.five;
+      case 6:
+        return ImageType.six;
+      case 7:
+        return ImageType.seven;
+      case 8:
+        return ImageType.eight;
+      default:
+        return null;
     }
   }
 }

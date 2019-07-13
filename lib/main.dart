@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_minesweeper/game_activity.dart';
+import 'package:minesweeper/game_activity.dart';
 
 void main() => runApp(MyApp());
 

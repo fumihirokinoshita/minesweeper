@@ -1,7 +1,7 @@
 class BoardSquare {
 
   bool hasBomb;
-  int BombsAround;
+  int bombsAround;
 
   BoardSquare({this.hasBomb = false, this.BombsAround = 0});
 }

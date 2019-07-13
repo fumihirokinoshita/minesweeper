@@ -1,6 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter_minesweeper/board_square.dart';
+import 'package:minesweeper/board_square.dart';
 
 
 // Types of images available

@@ -3,5 +3,5 @@ class BoardSquare {
   bool hasBomb;
   int bombsAround;
 
-  BoardSquare({this.hasBomb = false, this.BombsAround = 0});
+  BoardSquare({this.hasBomb = false, this.bombsAround = 0});
 }

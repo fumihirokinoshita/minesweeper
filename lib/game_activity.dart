@@ -290,7 +290,7 @@ class _GameActivityState extends State<GameActivity> {
       }
     }
 
-    set State(() {});
+    setState(() {});
   }
 
   // function to handle when a bomb is clicked

@@ -1,15 +1,114 @@
-version: 2
-jobs:
-  build:
+version: 2.1
+executors:
+  default_android:
+    shell: /bin/bash --login -eo pipefail
     environment:
-      - LANG: en_US.UTF-8
+      LC_ALL: en_US.UTF-8
+      LANG: en_US.UTF-8
+    working_directory: ~/flutterApp
     docker:
-      - image: circleci/android:api-27-alpha
+      - image: cirrusci/flutter:latest
+  default_ios:
+    shell: /bin/bash --login -eo pipefail
+    environment:
+      LC_ALL: en_US.UTF-8
+      LANG: en_US.UTF-8
+    working_directory: ~/flutterApp
+    macos:
+      # https://circleci.com/docs/2.0/testing-ios/#supported-xcode-versions
+      xcode: "10.1.0"
+
+commands:
+  install_flutter:
+    steps:
+      - run:
+          name: Install flutter SDK
+          command: mkdir -p ~/sdks/flutter && git clone -b stable https://github.com/flutter/flutter.git ~/sdks/flutter
+      - run:
+          name: Set flutter SDK PATH in bash
+          command: echo 'export FLUTTER_HOME=~/sdks/flutter' >> $BASH_ENV && source $BASH_ENV
+  setup_flutter:
+    steps:
+      - run:
+          name: Run flutter doctor
+          command: $FLUTTER_HOME/bin/flutter doctor
+      - run:
+          name: Run flutter analyze
+          command: $FLUTTER_HOME/bin/flutter analyze
+  setup_bundle:
+    parameters:
+      platform:
+        type: enum
+        enum: ['android', 'ios']
+    steps:
+      - run:
+          name: Set ruby version
+          command: echo "ruby-2.4" > ~/.ruby-version
+      - run:
+          name: Run bundle install
+          command: bundle install --path vendor/bundle
+          working_directory: ~/flutterApp/<< parameters.platform >>
+          environment:
+            BUNDLE_JOBS: 4
+            BUNDLE_RETRY: 3
+  setup_ios_build_setting:
+    steps:
+      - run:
+         name: Run pod setup
+         command: |
+            curl https://cocoapods-specs.circleci.com/fetch-cocoapods-repo-from-s3.sh | bash -s cf
+            bundle exec pod setup
+         working_directory: ~/flutterApp/ios
+  flutter_build:
+    parameters:
+      platform:
+        type: enum
+        enum: ['android', 'ios']
+      configuration:
+        type: enum
+        enum: ['development', 'staging', 'production']
+    steps:
+      - run:
+          name: Run build << parameters.platform >> app in << parameters.configuration >>
+          command: bundle exec fastlane << parameters.platform >> << parameters.configuration >>
+          working_directory: ~/flutterApp/<< parameters.platform >>
+
+jobs:
+  beta_development_android:
+    executor:
+      name: default_android
     steps:
       - checkout
-      - run:
-          name: Install Flutter SDK
-          command: git clone -b beta https://github.com/flutter/flutter.git ~/flutter
-      - run:
-          name: run tests
-          command: ~/flutter/bin/flutter test
+      - setup_flutter
+      - setup_bundle:
+          platform: android
+      - flutter_build:
+          platform: android
+          configuration: development
+  beta_development_ios:
+    executor:
+      name: default_ios
+    steps:
+      - checkout
+      - install_flutter
+      - setup_flutter
+      - setup_bundle:
+          platform: ios
+      - setup_ios_build_setting
+      - flutter_build:
+          platform: ios
+          configuration: development
+
+workflows:
+  build-debug:
+    jobs:
+      - beta_development_android:
+          filters:
+            branches:
+              only:
+                - /dev_.*/
+      - beta_development_ios:
+          filters:
+            branches:
+              only:
+                - /dev_.*/
